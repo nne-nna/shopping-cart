@@ -1,13 +1,15 @@
 import { createContext, useContext, useState } from "react"
 import { allProducts } from "../assets/data" 
-import CartItem from "../components/CartItem"
-
+import { 
+    getItemFromStorage, 
+    getParsedItemFromStorage, 
+    setItemInStorage 
+} from "../utilities/localStorageFns"
 
 const CartContext = createContext() 
 
 export const CartProvider = ({children}) => {
     const [allItems, setAllItems] = useState([])
-
 
     const setItems = () => {
         setAllItems(allProducts)
@@ -16,11 +18,7 @@ export const CartProvider = ({children}) => {
     const addToCart = (item) => {
         setAllItems((prevItems) => {
             return prevItems.map((prevItem) => {
-                if(prevItem.inCart) {
-                    return prevItem
-                }
-
-                return prevItem.id === item.id ? {...prevItem, inCart: true} : prevItem
+                return prevItem.id === item.id ? {...prevItem, inCart: true, quantity: 1} : prevItem
             })
         })
     }
@@ -41,9 +39,28 @@ export const CartProvider = ({children}) => {
         })
     }
 
+    const setLocalStorage = () => {
+        if(allItems.length !== 0) {
+            const inCartItems = allItems.filter((item) => item.inCart)
+            setItemInStorage("cartItems", inCartItems)
+        }
+    }
 
+    const setCartItemsFromStorage = () => {
+        if(getItemFromStorage("cartItems") !== null) {
+            const storageItems = getParsedItemFromStorage('cartItems')
+
+            setAllItems((prevItems) => {
+                return prevItems.map((item) => {
+                    const matchedItem = storageItems.find((storageItem) => storageItem.id === item.id)
+
+                    return matchedItem ? matchedItem : item
+                })
+            })
+        }
+    }
     return (
-        <CartContext.Provider value={{allItems, setItems, addToCart, removeFromCart, updateQuantity}}>
+        <CartContext.Provider value={{allItems, setItems, addToCart, removeFromCart, updateQuantity, setLocalStorage, setCartItemsFromStorage}}>
             {children}
         </CartContext.Provider>
     )

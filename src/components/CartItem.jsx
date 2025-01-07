@@ -20,7 +20,7 @@ const CartItem = ({item, fromCart}) => {
             <span className={`text-green-400 ${fromCart && "text-sm"}`}>${price}</span>
 
         </div>
-        <CartButton item={item}  />
+        <CartButton item={item} fromCart={fromCart} />
     </div>
   )
 }
